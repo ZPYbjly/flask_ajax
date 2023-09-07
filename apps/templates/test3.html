@@ -1,0 +1,143 @@
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="static/css/bootstrap.css" rel="stylesheet">
+  <title>Document</title>
+  
+</head>
+<body>
+
+  <button onclick="census()">统计行政区划火点</button>
+  <ul>
+    {% for i in data %}
+    <li>{{i}}</li>
+    {% endfor %}
+</ul>
+<canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
+<div class="table-responsive">
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>用户名</th>
+        <th>密码</th>
+        <th>账号</th>
+        <th>邮箱</th>
+      </tr>
+    </thead>
+    <tbody>
+     
+      {% for i in data %}
+      <tr>
+          <td>{{ i['a'] }}</td>
+          <td>{{ i['b'] }}</td>
+          <td>{{ i['c'] }}</td>
+          <td>{{ i['d'] }}</td>
+          <td>{{ i['e'] }}</td>
+        
+
+      </tr>
+  {% endfor %}
+    </tbody>
+  </table>
+</div>
+</main>
+</div>
+</div>
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+
+
+<script src="static/js/jquery.min.js"></script>
+<script>
+ function my1chart(week,numbers) {
+  'use strict'
+ 
+  feather.replace()
+  
+  // Graphs
+  var ctx = document.getElementById('myChart')
+  // eslint-disable-next-line no-unused-vars
+  var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: week ,
+      datasets: [{
+        data: numbers,
+        lineTension: 0,
+        backgroundColor: 'transparent',
+        borderColor: '#007bff',
+        borderWidth: 4,
+        pointBackgroundColor: '#007bff'
+      }]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: false
+          }
+        }]
+      },
+      legend: {
+        display: false
+      }
+    }
+  })
+}
+var week = ['Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday']
+var numbers = [12333,21345,18483,24003,23489,24092,12034]
+my1chart(week,numbers)
+
+
+function census(){
+    
+    $.ajax({
+        url:"/testajax",
+        type:'post',
+        dataType:'json',
+
+        data:JSON.stringify({
+           
+        }),
+         
+        success:function (data){
+               
+                alert("传参成功")
+                console.log(data)
+                console.log(data[0].status)
+                console.log(data[0].time)
+                console.log(data[1].week)
+                console.log(data[1].numbers)
+                
+                my1chart(data[1].week,data[1].numbers)
+            },
+        error:function (){
+            console.log(MyProvince,MyCity,MyDistrict)
+              alert("传参失败")
+              
+            }
+    })
+    
+  }
+
+
+  $.getJSON('http://127.0.0.1:5000/test3'
+    , function(data2) {          // 从Flask返回的数据
+      console.log(data2.a)           // 浏览器弹窗显示 后端返回的dict["a"]的值，此次是1
+  }
+)
+</script>
+<!-- <script src="../static/js/test3.js"></script> -->
+</html>

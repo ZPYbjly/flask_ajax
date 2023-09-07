@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=
+  , initial-scale=1.0">
+  <title>Document</title>
+  <link href="static/csas/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+  <div>
+    <input type="text" id = "userId">
+</div>
+<div>
+    <input type="password" id="password">
+</div>
+<button onclick="login()">login</button>
+
+
+<div class="select-box">
+    <select id="province"><option value="">请选择省份</option></select> 
+    <select id="city"></select> 
+    <select id="district"></select> 
+    <button onclick="submit()">login</button>
+    <button onclick="census()">统计行政区划火点</button>
+</div>
+<canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
+
+
+<script src="static/js/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+
+
+<script >
+
+var MyProvince = ''
+var MyCity = ''
+var MyDistrict = ''
+function my1chart(week,numbers) {
+  'use strict'
+ 
+  feather.replace()
+  
+  // Graphs
+  var ctx = document.getElementById('myChart')
+  // eslint-disable-next-line no-unused-vars
+  var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: week ,
+      datasets: [{
+        data: numbers,
+        lineTension: 0,
+        backgroundColor: 'transparent',
+        borderColor: '#007bff',
+        borderWidth: 4,
+        pointBackgroundColor: '#007bff'
+      }]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: false
+          }
+        }]
+      },
+      legend: {
+        display: false
+      }
+    }
+  })
+}
+var week = ['Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday']
+var numbers = [12333,21345,18483,24003,23489,24092,12034]
+my1chart(week,numbers)
+// $(document).on("change","#province",function(){     //获取整个网页文档对象（类似的于window.document）
+//    // alert('value：'+$(this).val());//获取value
+    
+//    MyProvince=$(this).val(); //获取选中的value值    
+    
+//     //(tid).appendTo("#.tk");  //把获取到的SELECT值插入到节点里面
+    
+//     //alert(ids);
+    
+//     alert(MyProvince);
+//     //alert('text：'+$(this).find("option:selected").text());//获取选中文本
+    
+    
+    
+// });
+// $(document).on("change","#city",function(){     //获取整个网页文档对象（类似的于window.document）
+//     MyCity=$(this).val(); //获取选中的value值 
+//     console.log(MyCity)   
+// });
+// $(document).on("change","#district",function(){     //获取整个网页文档对象（类似的于window.document）
+//     MyDistrict=$(this).val(); //获取选中的value值
+//     console.log(MyDistrict)     
+// });
+
+  function submit(){
+    
+    $.ajax({
+        url:"/submit",
+        type:'post',
+        dataType:'json',
+
+        data:JSON.stringify({
+            province: $("#province").val(),
+
+            city:  $("#city").val(),
+            
+            district: $("#district").val()
+        }),
+         
+        success:function (data){
+                alert("传参成功")
+                console.log(data)
+                console.log(data.status)
+                console.log(data.time)
+            },
+        error:function (){
+            console.log(MyProvince,MyCity,MyDistrict)
+              alert("传参失败")
+              
+            }
+    })
+    
+  }
+
+
+  function census(){
+    
+    $.ajax({
+        url:"/test2",
+        type:'post',
+        dataType:'json',
+
+        data:JSON.stringify({
+            province: $("#province").val(),
+
+            city:  $("#city").val(),
+            
+            district: $("#district").val()
+        }),
+         
+        success:function (data){
+               
+                alert("传参成功")
+                console.log(data)
+                console.log(data[0].status)
+                console.log(data[0].time)
+                console.log(data[1].week)
+                console.log(data[1].numbers)
+                
+                my1chart(data[1].week,data[1].numbers)
+            },
+        error:function (){
+            console.log(MyProvince,MyCity,MyDistrict)
+              alert("传参失败")
+              
+            }
+    })
+    
+  }
+
+
+  function login(){
+        $.ajax({
+            url:"/login",
+            type:"post",
+            dataType:"json",
+ 
+            //data为要传递给后端的数据，使用JSON.stringify()转换为json格式
+            data:JSON.stringify({
+                    userId:   $("#userId").val(),
+                    password: $("#password").val()
+                }),
+            success:function (data){
+
+
+                
+                alert("登录成功")
+                console.log(data)
+                console.log(data.status)
+                console.log(data.time)
+            },
+            error:function (){
+                alert("登录失败")
+                console.log("***********")
+            }
+        })
+    }
+
+
+    $(function(){
+		/*初始化，加载省市区*/
+		$.ajax({
+			type: 'GET',
+			url: 'static/json/data.json',
+			dataType: 'json',
+			success: function(data){
+            	var htmlProvince = '';
+            	province = data.province;
+            	city = data.city;
+            	district = data.district;
+            	for(var i=0; i<province.length;i++){
+				  	htmlProvince += '<option value="'+province[i].id+'">'+province[i].name+'</option>';
+						console.log(htmlProvince)
+						
+				}
+				$('#province').append(htmlProvince);
+            },
+            error: function(){
+            	console.log('请求失败');
+            }
+        });
+		/*选择省*/
+        $('#province').change(function(){
+        	var code = $(this).val();
+        	if(code!=''){
+        		var cityCode  = city[code][0].id;
+        		var htmlCity = '',
+        			htmlDistrict = '';
+        		for(var i=0; i<city[code].length;i++){
+				  	htmlCity += '<option value="'+city[code][i].id+'">'+city[code][i].name+'</option>';
+				}
+        		$('#city').html(htmlCity);
+        		
+        		for(var i=0; i<district[cityCode].length;i++){
+				  	htmlDistrict += '<option value="'+district[cityCode][i].id+'">'+district[cityCode][i].name+'</option>';
+				}
+        		$('#district').html(htmlDistrict);
+        	}else{
+        		$('#city,#district').html('');
+        	}
+        });
+
+		/*选择市*/
+		$('#city').change(function(){
+			var cityCode = $(this).val();
+        	var htmlDistrict = '';
+    		for(var i=0; i<district[cityCode].length;i++){
+			  	htmlDistrict += '<option value="'+district[cityCode][i].id+'">'+district[cityCode][i].name+'</option>';
+			}
+    		$('#district').html(htmlDistrict);
+		});
+	});
+
+
+
+    
+</script>
+</body>
+</html>

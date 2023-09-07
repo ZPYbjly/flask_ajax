@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据下载界面</title>
+  <link href="../static/css/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+  <div class="select-box">
+    <div class="alert alert-primary" style="text-align:center; color:#3b85d4;"  role="alert">
+      <h5>火点下载界面</h5>
+      
+    </div>
+    <div class="alert alert-secondary" role="alert">
+      <h5>请输入数据种类</h5>
+      <select id="firmtype" class="form-control selectpicker" ><option value="">请选择数据</option></select> <br />
+      <select id="firmsource" class="form-control selectpicker"><option value="">请选择数据源</option></select> <br />
+      <select id="datatype" class="form-control selectpicker" ><option value="">请选择数据格式</option></select> <br />
+
+    </div>
+    
+    
+
+  
+    <div class="alert alert-primary" role="alert">
+      <h5>请选择行政区划</h5>
+      <select class="form-control selectpicker" id="province"><option value="">请选择行政区划</option></select> 
+    <select class="form-control selectpicker" id="city"></select> 
+    <select class="form-control selectpicker" id="district"></select>
+     
+    </div>
+    
+    
+    <div class="alert alert-secondary" role="alert">
+      <h5>请输入日期序列</h5>
+      <input type="date"   id="date1"class="form-control " placeholder="请输入时间" >
+      <input type="date"  id="date2"class="form-control " placeholder="请输入时间"><br/>
+      
+    </div>
+       
+<!--    
+    <input type="file" class="form-control" id="name" placeholder="请输入名称"> -->
+  
+
+   
+    <!-- <button onclick="submit()"type="button" class="btn btn-secondary btn-lg btn-block" >统计行政区划火点</button><br /> -->
+<a  onclick="submit()" href="../static/json/data.json" type="button" class="btn btn-secondary btn-lg btn-block" download="data.json">点击下载</a> 
+<a  href="../static/json/test.csv" type="button" class="btn btn-secondary btn-lg btn-block" download="data.csv">点击下载</a> 
+
+<script src="static/js/jquery.min.js"></script>
+
+<script>
+
+
+
+
+
+var htmlfirm  = ''
+var htmldatatype = ''
+var firm = {"type": [{'id': 1, 'name':"ACF"},{'id': 2, 'name':"VNF"}],
+            "source": {"1":[{'id': 1, 'name':"modis"},{'id': 2, 'name':"suviirs"},{'id': 3, 'name':"j1viirs"}],
+                       "2":[{'id': 1, 'name':"modis"},{'id': 2, 'name':"viirs"}],
+                      }                    
+          }
+var datatype = { 'type':[{'id': 1, 'name':"Geojson"},{'id': 2, 'name':"csv"},{'id': 3, 'name':"shp"}] 
+
+}                     
+          console.log(firm['type'][1].id)          
+        	for(var i=0; i<firm['type'].length;i++){
+				  	htmlfirm += '<option value="'+firm['type'][i].id+'">'+firm['type'][i].name+'</option>';
+            // console.log(htmlfirm)
+				}
+        		$('#firmtype').append(htmlfirm);
+
+           for(var i=0; i<datatype['type'].length;i++){
+				  	htmldatatype += '<option value="'+datatype['type'][i].id+'">'+datatype['type'][i].name+'</option>';
+            // console.log(htmldatatype)
+				}
+        		$('#datatype').append(htmldatatype);
+
+
+$('#firmtype').change(function(){
+        	var code = $(this).val();
+          console.log(code)
+        	if(code!=''){
+            var firesource = firm["source"]
+            console.log(firesource)
+        	
+        		var htmlsource = ''
+        			
+        		for(var i=0; i<firesource[code].length;i++){
+              htmlsource += '<option value="'+firesource[code][i].id+'">'+firesource[code][i].name+'</option>';
+				}
+        		$('#firmsource').html(htmlsource);
+        		
+
+        	}else{
+            htmlsource += "<option value=''>请选择数据源</option>"
+        		$('#firmsource').html(htmlsource);
+        	}
+        });
+
+function submit(){
+    
+    $.ajax({
+        url:"/download",
+        type:'post',
+        dataType:'json',
+
+        data:JSON.stringify({
+
+           firesource:$('#firmsource').val(),
+           firetype: $('#firmtype').val(),
+            province: $("#province").val(),
+            city:  $("#city").val(),   
+            district: $("#district").val(),
+            date1:$("#date1").val(),
+            date2:$("#date2").val(),
+            datatype:$("#datatype").val(),
+        }),
+         
+        success:function (data){
+                alert("传参成功")
+                console.log(data)
+                console.log(data.status)
+                console.log(data.time)
+            },
+        error:function (){
+            console.log("defate")
+              alert("传参失败")
+              
+            }
+    })
+    
+  }
+
+            
+
+  $(function(){
+		/*初始化，加载省市区*/
+		$.ajax({
+			type: 'GET',
+			url: 'static/json/data.json',
+			dataType: 'json',
+			success: function(data){
+            	var htmlProvince = '';
+            	province = data.province;
+            	city = data.city;
+            	district = data.district;
+            	for(var i=0; i<province.length;i++){
+				  	htmlProvince += '<option value="'+province[i].id+'">'+province[i].name+'</option>';
+				    // console.log(htmlProvince)
+						
+				}
+				$('#province').append(htmlProvince);
+            },
+
+            error: function(){
+            	console.log('请求失败');
+            }
+        });
+		/*选择省*/
+        $('#province').change(function(){
+        	var code = $(this).val();
+        	if(code!=''){
+        		var cityCode  = city[code][0].id;
+        		var htmlCity = '',
+        			htmlDistrict = '';
+        		for(var i=0; i<city[code].length;i++){
+				  	htmlCity += '<option value="'+city[code][i].id+'">'+city[code][i].name+'</option>';
+				}
+        		$('#city').html(htmlCity);
+        		
+        		for(var i=0; i<district[cityCode].length;i++){
+				  	htmlDistrict += '<option value="'+district[cityCode][i].id+'">'+district[cityCode][i].name+'</option>';
+				}
+        		$('#district').html(htmlDistrict);
+        	}else{
+        		$('#city,#district').html('');
+        	}
+        });
+
+		/*选择市*/
+		$('#city').change(function(){
+			var cityCode = $(this).val();
+        	var htmlDistrict = '';
+    		for(var i=0; i<district[cityCode].length;i++){
+			  	htmlDistrict += '<option value="'+district[cityCode][i].id+'">'+district[cityCode][i].name+'</option>';
+			}
+    		$('#district').html(htmlDistrict);
+		});
+	});
+
+
+</script>
+
+
+</body>
+</html>
