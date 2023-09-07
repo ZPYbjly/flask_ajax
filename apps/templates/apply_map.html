@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>apply_thematic_map</title>
+  <link href="../static/css/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+  <div class="select-box">
+    <div class="alert alert-primary" style="text-align:center; color:#3b85d4;"  role="alert">
+      <h5>火点及工业热源专题图订阅</h5>
+      
+    </div>
+    <div class="alert alert-secondary" role="alert">
+      <h5>请输入行政区划类别</h5>
+      <select id="rangetype" class="form-control selectpicker" ><option value="">请选择行政区划种类</option></select> <br />
+
+
+    </div>
+    
+    
+
+  
+    <div class="alert alert-primary" role="alert">
+      <h5>请选择行政区划</h5>
+      <select class="form-control selectpicker" id="province"><option value="">请选择行政区划</option></select> 
+    <select class="form-control selectpicker" id="city"></select> 
+    <select class="form-control selectpicker" id="district"></select>
+     
+    </div>
+    
+    
+    <div class="alert alert-secondary" role="alert">
+
+      <h5>请选择需要订阅的专题</h5>
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" name="checkmaptype" class="custom-control-input" id="same-address" value= "1" >
+        <label class="custom-control-label" for="same-address">火点数据分布图</label>
+      </div>
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" name="checkmaptype" class="custom-control-input" id="save-info" value= "2" >
+        <label class="custom-control-label" for="save-info">工业热源分布图</label>
+        
+      </div>
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" name="checkmaptype" class="custom-control-input" id="frp" value= "3" >
+        <label class="custom-control-label" for="frp">Frp统计图</label>
+        
+      </div>
+      <h5>是否需要详细的数据表格</h5>
+      <div class="d-block my-3">
+        <div class="custom-control custom-radio">
+          <input id="credit" name="paymentMethod" type="radio" class="custom-control-input" value= "yes" >
+          <label class="custom-control-label" for="credit">是</label>
+        </div>
+        <div class="custom-control custom-radio">
+          <input id="debit" name="paymentMethod" type="radio" class="custom-control-input" value= "no">
+          <label class="custom-control-label" for="debit">否</label>
+        </div>
+      
+    </div>
+      
+    </div> 
+<!--    
+    <input type="file" class="form-control" id="name" placeholder="请输入名称"> -->
+    <div class="alert alert-primary" role="alert">
+      <h5>请输入您的邮箱</h5>
+      <input type="email" class="form-control" id="email" placeholder="you@example.com">
+
+      </div>
+      
+   
+     
+   
+   
+    <!-- <button onclick="submit()"type="button" class="btn btn-secondary btn-lg btn-block" >统计行政区划火点</button><br /> -->
+<a  onclick="submit()"  type="button" class="btn btn-secondary btn-lg btn-block" >点击提交</a> 
+<a  onclick="checkradio()" type="button" class="btn btn-secondary btn-lg btn-block" >点击下载</a> 
+<a  onclick="check_checkbox()" type="button" class="btn btn-secondary btn-lg btn-block" >点击下载23</a>
+<script src="static/js/jquery.min.js"></script>
+
+<script>
+
+
+
+
+
+var htmlfirm  = ''
+var htmlrangetype = ''
+var rangetype = {"type": [{'id': 1, 'name':"省"},{'id': 2, 'name':"市"},{'id': 2, 'name':"县"}]
+          }
+var datatype = { 'type':[{'id': 1, 'name':"Geojson"},{'id': 2, 'name':"csv"},{'id': 3, 'name':"shp"}] 
+
+}                     
+          console.log(rangetype['type'][1].id)          
+        	for(var i=0; i<rangetype['type'].length;i++){
+				  	htmlrangetype += '<option value="'+rangetype['type'][i].id+'">'+rangetype['type'][i].name+'</option>';
+            // console.log(htmlfirm)
+				}
+        		$('#rangetype').append(htmlrangetype);
+
+           
+function checkradio(){
+console.log("check function start work !!!")
+var radio = document.getElementsByName("paymentMethod");
+
+for(i = 0; i < radio.length; i ++){
+
+if(radio[i].checked){
+  
+return radio[i].value
+
+}
+
+}
+
+}
+function check_checkbox(){
+console.log("checkmaptype function start work !!!")
+var checkmaptype = document.getElementsByName("checkmaptype");
+var arr = []
+for(i = 0; i < checkmaptype.length; i ++){
+
+if(checkmaptype[i].checked){
+  
+arr.push(checkmaptype[i].value);
+
+
+}
+
+}
+// console.log(arr)
+return arr
+}
+
+
+function submit(){
+  var radio  = checkradio();
+  var checkbox = check_checkbox();
+  console.log(radio)
+    $.ajax({
+      
+        url:"/applyresult",
+        type:'post',
+        dataType:'json',
+
+        data:JSON.stringify({
+
+            email:$("#email").val(),
+            rangetype:$('#rangetype').val(),
+            province: $("#province").val(),
+            city:  $("#city").val(),   
+            district: $("#district").val(),
+            typemap:checkbox,
+            debit:radio,  
+            
+        }),
+         
+        success:function (data){
+                alert("提交成功，请等待反馈...")
+                console.log(data)
+                console.log(data.status)
+                console.log(data.time)
+            },
+        error:function (){
+            console.log("defate")
+              alert("提交失败，请检查输入格式")
+              
+            }
+    })
+    
+  }
+
+            
+
+  $(function(){
+		/*初始化，加载省市区*/
+		$.ajax({
+			type: 'GET',
+			url: 'static/json/data.json',
+			dataType: 'json',
+			success: function(data){
+            	var htmlProvince = '';
+            	province = data.province;
+            	city = data.city;
+            	district = data.district;
+            	for(var i=0; i<province.length;i++){
+				  	htmlProvince += '<option value="'+province[i].id+'">'+province[i].name+'</option>';
+				    // console.log(htmlProvince)
+						
+				}
+				$('#province').append(htmlProvince);
+            },
+
+            error: function(){
+            	console.log('请求失败');
+            }
+        });
+		/*选择省*/
+        $('#province').change(function(){
+        	var code = $(this).val();
+        	if(code!=''){
+        		var cityCode  = city[code][0].id;
+        		var htmlCity = '',
+        			htmlDistrict = '';
+        		for(var i=0; i<city[code].length;i++){
+				  	htmlCity += '<option value="'+city[code][i].id+'">'+city[code][i].name+'</option>';
+				}
+        		$('#city').html(htmlCity);
+        		
+        		for(var i=0; i<district[cityCode].length;i++){
+				  	htmlDistrict += '<option value="'+district[cityCode][i].id+'">'+district[cityCode][i].name+'</option>';
+				}
+        		$('#district').html(htmlDistrict);
+        	}else{
+        		$('#city,#district').html('');
+        	}
+        });
+
+		/*选择市*/
+		$('#city').change(function(){
+			var cityCode = $(this).val();
+        	var htmlDistrict = '';
+    		for(var i=0; i<district[cityCode].length;i++){
+			  	htmlDistrict += '<option value="'+district[cityCode][i].id+'">'+district[cityCode][i].name+'</option>';
+			}
+    		$('#district').html(htmlDistrict);
+		});
+	});
+
+
+</script>
+
+
+</body>
+</html>
+
+
+
